@@ -1,83 +1,50 @@
 #!/bin/bash
 # Setup script for Ghibli Cake Video Generator
+# Handles FFmpeg installation and Python dependencies
 
-echo "╔════════════════════════════════════════════════╗"
-echo "║   🎨 Ghibli Cake Video Generator Setup 🍰      ║"
-echo "╚════════════════════════════════════════════════╝"
+echo "🎬 Setting up Ghibli Cake Video Generator..."
 echo ""
 
-# Check Python version
-echo "🐍 Checking Python version..."
-python_version=$(python3 --version 2>&1 | awk '{print $2}')
-echo "   Python version: $python_version"
+# Detect OS
+OS_TYPE=$(uname -s)
 
-if ! command -v python3 &> /dev/null; then
-    echo "❌ Python 3 not found. Please install Python 3.8 or higher."
-    exit 1
-fi
-
-# Check FFmpeg
-echo ""
-echo "🎬 Checking FFmpeg..."
-if ! command -v ffmpeg &> /dev/null; then
-    echo "⚠️  FFmpeg not found."
-    echo "Please install FFmpeg:"
-    echo ""
-    echo "  macOS:     brew install ffmpeg"
-    echo "  Ubuntu:    sudo apt-get install ffmpeg"
-    echo "  Windows:   choco install ffmpeg (or download from ffmpeg.org)"
-    echo ""
-    read -p "Continue without FFmpeg? (y/n) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+# Install FFmpeg based on OS
+echo "📦 Installing FFmpeg..."
+if [[ "$OS_TYPE" == "Darwin" ]]; then
+    # macOS
+    if command -v brew &> /dev/null; then
+        brew install ffmpeg
+        echo "✓ FFmpeg installed via Homebrew"
+    else
+        echo "❌ Homebrew not found. Please install from: https://brew.sh"
         exit 1
     fi
-else
-    ffmpeg_version=$(ffmpeg -version 2>&1 | head -n 1)
-    echo "   ✓ $ffmpeg_version"
+elif [[ "$OS_TYPE" == "Linux" ]]; then
+    # Linux
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
+        echo "✓ FFmpeg installed via apt"
+    elif command -v yum &> /dev/null; then
+        sudo yum install -y ffmpeg
+        echo "✓ FFmpeg installed via yum"
+    else
+        echo "❌ Could not install FFmpeg. Please install manually from: https://ffmpeg.org/download.html"
+        exit 1
+    fi
+elif [[ "$OS_TYPE" == "MINGW64_NT" ]] || [[ "$OS_TYPE" == "MSYS_NT" ]]; then
+    # Windows (Git Bash)
+    echo "❌ Please install FFmpeg manually from: https://ffmpeg.org/download.html"
+    echo "   Add FFmpeg to your PATH environment variable"
+    exit 1
 fi
 
 # Install Python dependencies
 echo ""
-echo "📦 Installing Python dependencies..."
-pip3 install --upgrade pip
-pip3 install -r requirements.txt
+echo "📚 Installing Python dependencies..."
+pip install --upgrade pip
+pip install -r requirements.txt
 
-if [ $? -eq 0 ]; then
-    echo "✓ Dependencies installed successfully"
-else
-    echo "❌ Failed to install dependencies"
-    exit 1
-fi
-
-# Create output directory
 echo ""
-echo "📁 Creating output directory..."
-mkdir -p output/frames
-echo "✓ Output directory ready"
-
-# Summary
-echo ""
-echo "╔════════════════════════════════════════════════╗"
-echo "║          ✅ Setup Complete! 🎉                 ║"
-echo "╚════════════════════════════════════════════════╝"
-echo ""
-echo "🚀 Ready to generate videos!"
-echo ""
-echo "Quick start commands:"
-echo ""
-echo "  # Generate full video"
-echo "  python3 main.py"
-echo ""
-echo "  # Generate with custom output"
-echo "  python3 main.py --output my_video.mp4"
-echo ""
-echo "  # Generate only frames"
-echo "  python3 main.py --frames-only"
-echo ""
-echo "  # Generate only audio"
-echo "  python3 main.py --audio-only"
-echo ""
-echo "📖 For more options, run:"
-echo "  python3 main.py --help"
-echo ""
+echo "✅ Setup complete!"
+echo "🚀 Run: python main.py"
