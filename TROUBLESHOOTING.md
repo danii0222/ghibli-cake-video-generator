@@ -1,133 +1,174 @@
-# 🔧 Troubleshooting Guide
+# 🔧 Troubleshooting Guide - Ghibli Cake Video Generator
 
-## Common Issues and Solutions
+## المشاكل الشائعة وحلولها
 
-### ❌ "Module not found" errors
+### ❌ المشكلة: الفيديو لا يتحمل / لا يتم إنشاء الفيديو
 
-**Solution:** Install all dependencies:
+#### الحل 1: استخدم جودة منخفضة للاختبار
 ```bash
-pip install -r requirements.txt
+python main.py low
+```
+هذا سيقلل من الموارد المطلوبة بشكل كبير.
+
+#### الحل 2: تحقق من المتطلبات
+```bash
+pip install --upgrade moviepy scipy numpy opencv-python Pillow
+```
+
+#### الحل 3: تأكد من تثبيت FFmpeg
+- **Linux (Ubuntu/Debian):**
+  ```bash
+  sudo apt-get install ffmpeg
+  ```
+- **macOS:**
+  ```bash
+  brew install ffmpeg
+  ```
+- **Windows:**
+  - استخدم [FFmpeg Official](https://ffmpeg.org/download.html)
+  - أو عبر Chocolatey: `choco install ffmpeg`
+
+---
+
+### ❌ المشكلة: خطأ "No such file or directory"
+
+**السبب:** ملفات الإطارات لم تُنشأ بشكل صحيح
+
+**الحل:**
+```bash
+rm -rf output/
+python main.py low
 ```
 
 ---
 
-### ❌ FFmpeg not found
+### ❌ المشكلة: استهلاك عالي للذاكرة
 
-**Linux:**
-```bash
-sudo apt-get install ffmpeg
-```
-
-**macOS:**
-```bash
-brew install ffmpeg
-```
-
-**Windows:**
-- Download from: https://ffmpeg.org/download.html
-- Add to PATH environment variable
-
-**Verify installation:**
-```bash
-ffmpeg -version
-```
-
----
-
-### ❌ "Font not found" warning
-
-The script will automatically find system fonts. If it fails:
-- Linux: Install fonts: `sudo apt-get install fonts-dejavu`
-- macOS: Fonts are pre-installed
-- Windows: Arial should be available by default
-
----
-
-### ❌ "Out of memory" error
-
-The 4K video generation requires significant RAM:
-- Minimum: 4GB RAM
-- Recommended: 8GB+ RAM
-
-**Workaround - Reduce quality temporarily:**
-Edit `config.py`:
-```python
-VIDEO_WIDTH = 540  # Half resolution
-VIDEO_HEIGHT = 960
-VIDEO_FPS = 15     # Lower FPS
-```
-
----
-
-### ❌ Video file is corrupted or won't play
-
-1. Check output file size:
+**الحل:**
+1. استخدم جودة منخفضة:
    ```bash
-   ls -lh output/ghibli_chocolate_cake.mp4
-   ```
-   Should be > 100MB for 2-minute video
-
-2. Verify with ffprobe:
-   ```bash
-   ffprobe output/ghibli_chocolate_cake.mp4
+   python main.py low
    ```
 
-3. Try re-generating:
+2. أغلق التطبيقات الأخرى
+
+3. تحقق من المساحة الحرة على القرص (يجب أن تكون على الأقل 2GB)
+
+---
+
+### ❌ المشكلة: "KeyError" أو "ImportError"
+
+**السبب:** مشكلة في المتطلبات
+
+**الحل:**
+```bash
+pip install -r requirements.txt --force-reinstall
+python main.py low
+```
+
+---
+
+### ❌ المشكلة: الصوت غير موجود في الفيديو
+
+**الحل:**
+1. تأكد من أن `scipy` مثبت:
    ```bash
-   rm -rf output/
+   pip install --upgrade scipy
+   ```
+
+2. حاول من جديد:
+   ```bash
    python main.py
    ```
 
 ---
 
-### ❌ "ImageClip" or "AudioFileClip" errors
+## 🎯 نصائح الأداء
 
-**Solution:** Update moviepy:
+| الخيار | السرعة | جودة | حجم الملف | ذاكرة |
+|--------|--------|-------|---------|-------|
+| `low` | ⚡⚡⚡ | ⭐⭐ | ~100MB | منخفض |
+| `medium` | ⚡⚡ | ⭐⭐⭐ | ~200MB | متوسط |
+| `high` | ⚡ | ⭐⭐⭐⭐ | ~400MB | عالي |
+
+---
+
+## 📊 الخطوات التفصيلية
+
+### خطوة 1: تحضير البيئة
 ```bash
-pip install --upgrade moviepy imageio imageio-ffmpeg
+# تثبيت المتطلبات
+pip install -r requirements.txt
+
+# تحقق من FFmpeg
+ffmpeg -version
+```
+
+### خطوة 2: تشغيل البرنامج
+```bash
+# أول محاولة (جودة منخفضة للاختبار)
+python main.py low
+
+# إذا نجح، جرب جودة متوسطة
+python main.py medium
+
+# للجودة العالية (قد يستغرق وقت طويل)
+python main.py high
+```
+
+### خطوة 3: تحقق من النتيجة
+```bash
+# الملف سيكون موجود في:
+output/ghibli_chocolate_cake.mp4
 ```
 
 ---
 
-### ❌ Slow video generation
+## 🐛 تصحيح الأخطاء
 
-- Reduce resolution in `config.py`
-- Lower FPS (e.g., 24 instead of 30)
-- Close other applications
-- Use SSD for faster I/O
+إذا واجهت خطأ، تحقق من المعلومات التالية:
 
----
+```python
+# أضف هذا في main.py لترى معلومات النظام
+import platform
+import sys
 
-### ⚠️ Script takes too long
-
-Normal timings:
-- Scene generation: 10-20 seconds
-- Audio generation: 5-10 seconds
-- Video composition: 2-5 minutes (depends on system specs)
-
-Total: ~3-6 minutes for 2-minute video
+print(f"Python Version: {sys.version}")
+print(f"Platform: {platform.system()} {platform.release()}")
+print(f"Processor: {platform.processor()}")
+```
 
 ---
 
-## System Requirements
+## 📞 احصل على المساعدة
 
-| Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| Python | 3.8 | 3.10+ |
-| RAM | 4GB | 8GB+ |
-| Storage | 5GB free | 10GB+ |
-| CPU | 2 cores | 4+ cores |
-| FFmpeg | Latest | Latest |
+1. **تحقق من رسالة الخطأ** - اقرأ الرسالة الحمراء بعناية
+2. **جرب جودة منخفضة** - `python main.py low`
+3. **أعد تثبيت المتطلبات** - `pip install -r requirements.txt --force-reinstall`
+4. **افسح مساحة على القرص** - تأكد من وجود 2GB متاح
+5. **أعد تشغيل الكمبيوتر** - قد يساعد في تحرير الموارد
 
 ---
 
-## Getting Help
+## ✅ علامات النجاح
 
-1. Check error messages carefully
-2. Verify system requirements
-3. Try the troubleshooting steps above
-4. Check GitHub Issues
-5. Open a new issue with:
-   - OS and Python version
-   - Full error message
-   - Steps to reproduce
+عندما يعمل كل شيء بشكل صحيح، يجب أن ترى:
+
+```
+✓ Intro frame created
+✓ crack_eggs frame created
+✓ add_sugar frame created
+✓ pour_liquids frame created
+✓ sift_dry frame created
+✓ whisk_batter frame created
+✓ pour_batter frame created
+✓ oven frame created
+✓ outro frame created
+✓ ASMR audio track created
+✓ Video created successfully!
+📁 Output: output/ghibli_chocolate_cake.mp4
+```
+
+---
+
+**أخر تحديث:** September 2026
