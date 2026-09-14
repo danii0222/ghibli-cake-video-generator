@@ -3,7 +3,7 @@ Scene Generator for Ghibli-inspired Anime Video
 Creates hand-drawn style frames with warm lighting and cozy aesthetic
 """
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 import numpy as np
 import os
 from config import GHIBLI_COLORS, VIDEO_WIDTH, VIDEO_HEIGHT, RECIPE_STEPS
@@ -13,6 +13,32 @@ class GhibliSceneGenerator:
         self.width = width
         self.height = height
         self.colors = GHIBLI_COLORS
+        self.font = self._load_font()
+        
+    def _load_font(self, font_size=60):
+        """Load font with cross-platform support"""
+        font_paths = [
+            # Linux
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            # macOS
+            "/System/Library/Fonts/Arial.ttf",
+            "/Library/Fonts/Arial.ttf",
+            # Windows
+            "C:\\Windows\\Fonts\\arial.ttf",
+            "C:\\Windows\\Fonts\\Arial.ttf",
+        ]
+        
+        for font_path in font_paths:
+            try:
+                if os.path.exists(font_path):
+                    return ImageFont.truetype(font_path, font_size)
+            except Exception as e:
+                continue
+        
+        # Fallback to default font
+        print("⚠️  Could not load system font, using default font")
+        return ImageFont.load_default()
         
     def create_base_kitchen(self):
         """Create cozy kitchen background with warm lighting"""
@@ -45,15 +71,10 @@ class GhibliSceneGenerator:
     
     def add_text_overlay(self, img, text, position="center", font_size=60):
         """Add text with soft shadow effect"""
-        from PIL import ImageFont
-        
         draw = ImageDraw.Draw(img, 'RGBA')
         
-        # Try to use a nice font, fallback to default
-        try:
-            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", font_size)
-        except:
-            font = ImageFont.load_default()
+        # Load font with specific size
+        font = self._load_font(font_size)
         
         # Get text bounding box
         bbox = draw.textbbox((0, 0), text, font=font)
